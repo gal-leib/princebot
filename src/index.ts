@@ -43,6 +43,8 @@ bot.on("text", async (ctx) => {
 export async function botFunction(req: Request, res: Response): Promise<void> {
   try {
     await bot.handleUpdate(req.body);
+  } catch (error) {
+    console.error(error)
   } finally {
     res.status(200).end();
   }
