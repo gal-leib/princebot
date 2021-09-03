@@ -1,24 +1,52 @@
 import { Request, Response } from 'express'
 import { Telegraf } from 'telegraf'
+import { Sticker } from 'typegram';
 
-const { BOT_TOKEN, FUNCTION_NAME, PROJECT_ID, REGION } = process.env
+const { BOT_TOKEN, TRIGGER_URL, CHANCE_OF_PRINCE, STICKER_SET } = process.env
 
 if (!BOT_TOKEN) {
   throw new TypeError('BOT_TOKEN must be provided!')
 }
 
+if (!TRIGGER_URL) {
+  throw new TypeError('TRIGGER_URL must be provided!')
+}
+
+if (!STICKER_SET) {
+  throw new TypeError('STICKER_SET must be provided!')
+}
+
+const chanceOfPrince = CHANCE_OF_PRINCE ? parseFloat(CHANCE_OF_PRINCE) : 0;
+
+console.log("Setting up a bot");
 const bot = new Telegraf(BOT_TOKEN);
 
-bot.telegram.setWebhook(
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    `https://${REGION!}-${PROJECT_ID!}.cloudfunctions.net/${FUNCTION_NAME!}`
-  )
+bot.telegram.setWebhook(TRIGGER_URL);
+console.log(`set up hook on ${TRIGGER_URL}`)
 
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-export async function botFunction(req:Request, res: Response) {
-    try {
-        await bot.handleUpdate(req.body);
-    } finally {
-        res.status(200).end();
-    }
+let princeSticker: Sticker | undefined;
+
+async function loadSticker() {
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  const princeStickerSet = await bot.telegram.getStickerSet(STICKER_SET!);
+  princeSticker = princeStickerSet.stickers[0];
+  console.log(`Got sticker id: {${princeSticker?.file_id}}`)
+}
+
+loadSticker();
+
+
+bot.on("text", async (ctx) => {
+  if (Math.random() > chanceOfPrince) {
+    return
+  }
+  ctx.telegram.sendSticker(ctx.chat.id, princeSticker?.file_id || "")
+})
+
+export async function botFunction(req: Request, res: Response): Promise<void> {
+  try {
+    await bot.handleUpdate(req.body);
+  } finally {
+    res.status(200).end();
+  }
 }

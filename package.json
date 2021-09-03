@@ -2,9 +2,15 @@
   "name": "princebot",
   "version": "1.0.0",
   "description": "Telegram bot that sends random stickers",
-  "main": "index.ts",
-  "author": "",
+  "author": "hyprwave",
   "license": "ISC",
+  "main": "out/index.js",
+  "scripts": {
+    "build": "tsc",
+    "clean": "rimraf \"out/*\"",
+    "gcp-build": "npm run build",
+    "deploy": "gcloud functions deploy botFunction --runtime nodejs14 --trigger-http --allow-unauthenticated"
+  },
   "devDependencies": {
     "@types/express": "^4.17.13",
     "@typescript-eslint/eslint-plugin": "^4.30.0",
