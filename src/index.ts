@@ -5,15 +5,15 @@ import { Sticker } from 'typegram';
 const { BOT_TOKEN, TRIGGER_URL, CHANCE_OF_PRINCE, STICKER_SET } = process.env
 
 if (!BOT_TOKEN) {
-  throw new TypeError('BOT_TOKEN must be provided!')
+  throw new Error('BOT_TOKEN must be provided!')
 }
 
 if (!TRIGGER_URL) {
-  throw new TypeError('TRIGGER_URL must be provided!')
+  throw new Error('TRIGGER_URL must be provided!')
 }
 
 if (!STICKER_SET) {
-  throw new TypeError('STICKER_SET must be provided!')
+  throw new Error('STICKER_SET must be provided!')
 }
 
 const chanceOfPrince = CHANCE_OF_PRINCE ? parseFloat(CHANCE_OF_PRINCE) : 0;
@@ -27,14 +27,11 @@ console.log(`set up hook on ${TRIGGER_URL}`)
 let princeSticker: Sticker | undefined;
 
 async function loadSticker() {
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const princeStickerSet = await bot.telegram.getStickerSet(STICKER_SET!);
   princeSticker = princeStickerSet.stickers[0];
   console.log(`Got sticker id: {${princeSticker?.file_id}}`)
 }
-
 loadSticker();
-
 
 bot.on("text", async (ctx) => {
   if (Math.random() > chanceOfPrince) {
